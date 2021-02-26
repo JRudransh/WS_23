@@ -5,6 +5,7 @@ import Becex
 import Catch
 import MobileCiti
 import Ebay
+import JbHiFi
 
 from Functions import get_data, post_data, Compare, calculate, find_model
 
@@ -31,7 +32,10 @@ url = {
         ("https://www.mobileciti.com.au/catalogsearch/result/?q=", 0.5, 6),
 
     "https://www.ebay.com.au/":
-        ("https://www.ebay.com.au/sch/i.html?_nkw=", 0.8, 7),
+        ("https://www.ebay.com.au/sch/i.html?_nkw=", 0.5, 7),
+
+    "https://www.jbhifi.com.au/":
+        ("https://www.jbhifi.com.au/?query=", 0.5, 8),
 }
 
 
@@ -87,6 +91,12 @@ def scrap(given_name: str, given_url, given_model_no=None):
             scrape_data = Ebay.run(given_name, scrape_url, given_model_no)
         else:
             scrape_data = Ebay.run(given_name, scrape_url)
+
+    if url_id == 8:
+        if given_model_no is not None:
+            scrape_data = JbHiFi.run(given_name, scrape_url, given_model_no)
+        else:
+            scrape_data = JbHiFi.run(given_name, scrape_url)
 
     return scrape_data, get_filter_level
 

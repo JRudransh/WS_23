@@ -3,7 +3,7 @@ from datetime import datetime
 from Functions import clean_text, clean_price
 
 
-def get_prd_data(given_name: str, given_url: str):
+def get_links(given_name: str, given_url: str, given_model_no=None):
     session = HTMLSession()
 
     inp_name = given_name.replace(' ', '+').lower()
@@ -16,29 +16,34 @@ def get_prd_data(given_name: str, given_url: str):
 
     print(f'{len(items)} Data Found for: {given_name}')
 
-    # link_list = []
-    #
-    # for item in items:
-    #     try:
-    #         links = item.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].absolute_links
-    #         link = list(links)[0]
-    #         link_list.append(link)
-    #     except AttributeError:
-    #         print('Link not found \n')
-    #         print(item.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].text)
-    #     except Exception as e:
-    #         print(e)
+    f_link_list = []
 
-    return items
+    for item in items:
+        try:
+            links = item.find('.product--title-link')[0].text
+            if given_model_no is not None:
+                if given_model_no in links:
+                    f_link_list.append(item)
+        except AttributeError:
+            print('Link not found \n')
+            print(item.find('.product--title-link')[0].text)
+        except Exception as e:
+            print(e, end=" in GET LINKS\n\n")
+
+    return f_link_list if given_model_no is not None else items
 
 
-def scrap(given_name: str, given_url):
+def scrap(given_name: str, given_url, given_model_no=None):
     """
+    :param given_model_no:
     :param given_name:
     :param given_url:
     :return: List of Scraped data, Data error count and Keyword
     """
-    data = get_prd_data(given_name, given_url)
+    if given_model_no is not None:
+        data = get_links(given_name, given_url, given_model_no)
+    else:
+        data = get_links(given_name, given_url)
 
     if len(data) < 1:
         return []
@@ -83,8 +88,8 @@ def scrap(given_name: str, given_url):
     return data_list
 
 
-def run(name, given_url):
+def run(name, given_url, given_model_no=None):
 
-    data = scrap(name, given_url)
+    data = scrap(name, given_url, given_model_no)
 
     return data

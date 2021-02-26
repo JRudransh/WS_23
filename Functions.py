@@ -31,31 +31,31 @@ def model_filter(name, model):
 
 def get_data():
     # For API
-    while True:
-        data_dict = get(get_url).json()
-        if data_dict['responseCode'] == 200:
-            break
-        else:
-            print('Data not available..')
-            sleep(4)
+    # while True:
+    #     data_dict = get(get_url).json()
+    #     if data_dict['responseCode'] == 200:
+    #         break
+    #     else:
+    #         print('Data not available..')
+    #         sleep(4)
     # For testing
-    # data_dict = {
-    #     "responseCode": 200,
-    #     "responseMessage": "get scraping data from rabbitmq successfully",
-    #     "preferencePojo": {
-    #         "preferenceId": 84,
-    #         "userId": 1,
-    #         "url_scrap": "https://www.ebay.com.au/",
-    #         "product_scrap": "Samsung Galaxy S20",
-    #         "createdDate": "2021-02-25 05:34:10",
-    #         "category": "Mobile",
-    #         "sku": "sku",
-    #         "price": 50.0,
-    #         "variancepercentage": 0,
-    #         "status": 0,
-    #         "seller": "xtrem"
-    #     }
-    # }
+    data_dict = {
+        "responseCode": 200,
+        "responseMessage": "get scraping data from rabbitmq successfully",
+        "preferencePojo": {
+            "preferenceId": 84,
+            "userId": 1,
+            "url_scrap": "https://www.jbhifi.com.au/",
+            "product_scrap": "Samsung Galaxy S20",
+            "createdDate": "2021-02-25 05:34:10",
+            "category": "Mobile",
+            "sku": "sku",
+            "price": 50.0,
+            "variancepercentage": 0,
+            "status": 0,
+            "seller": "xtrem"
+        }
+    }
     if data_dict['responseCode'] != 200:
         return False, False, False, False
     prd = data_dict['preferencePojo']
@@ -106,7 +106,10 @@ def calculate(data_list, price):
         if i['price'] != '0':
             p_l.append(i['price'])
             m_l.append((i['merchant'], i['price']))
-    min_price = min(p_l)
+    try:
+        min_price = min(p_l)
+    except:
+        min_price = '0'
     p_l.sort()
 
     for p in p_l:
