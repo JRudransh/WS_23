@@ -16,11 +16,11 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
     inp_name = given_name.replace(' ', '+').lower()
 
-    search_url = given_url + inp_name
+    search_url = given_url.replace('{}', inp_name)
 
     browser.get(search_url)
 
-    items = browser.find_elements_by_css_selector('.ais-hits--item.ais-hits--item')
+    items = browser.find_elements_by_css_selector('.sc-bdVaJa.Tile-iqbpf7-0.fIkVYO')
 
     print(f'{len(items)} Results Found for: {given_name}')
 
@@ -30,19 +30,20 @@ def scrap(given_name: str, given_url, given_model_no=None):
             t1 = datetime.now()
 
             try:
-                title = clean_text(prd_data.find_elements_by_css_selector('.ais-hit--title.product-tile__title')[0].text)
+                title = clean_text(prd_data.find_elements_by_css_selector('.DefaultProductTile__ProductName-dfe2sm-1'
+                                                                          '.dRgJNf')[0].text)
+                url = browser.find_elements_by_css_selector('a')[0].get_attribute('href')
                 # print(title)
-                url = prd_data.find_elements_by_css_selector('.product-tile')[0].get_attribute('href')
             except IndexError:
                 continue
 
             try:
-                p = prd_data.find_elements_by_css_selector('span.sale')[0].text
+                p = prd_data.find_elements_by_css_selector('.ProductPrice__Wrapper-sc-1ye3dgu-0.guXOLt')[0].text
                 prd_price = clean_price(p)
                 if prd_price == '':
                     a = [][2]
             except IndexError:
-                p = prd_data.find_elements_by_css_selector('span.ais-hit--price.price')[0].text
+                p = prd_data.find_elements_by_css_selector('.ProductPrice__Wrapper-sc-1ye3dgu-0.guXOLt')[0].text
                 prd_price = clean_price(p)
             except Exception as e:
                 print(f'\n{e} price\n{title}\n\n')

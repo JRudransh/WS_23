@@ -6,6 +6,11 @@ import Catch
 import MobileCiti
 import Ebay
 import JbHiFi
+import OfficeWorks
+import BingLee
+import Kogan
+import DickSmith
+import sys
 
 from Functions import get_data, post_data, Compare, calculate, find_model
 
@@ -36,14 +41,26 @@ url = {
 
     "https://www.jbhifi.com.au/":
         ("https://www.jbhifi.com.au/?query=", 0.5, 8),
+
+    "https://www.officeworks.com.au/":
+        ("https://www.officeworks.com.au/shop/officeworks/search?q={}&view=grid&page=1&sortBy=bestmatch", 0.5, 9),
+
+    "https://www.binglee.com.au/":
+        ("https://www.binglee.com.au/", 0.5, 10),
+
+    "https://www.kogan.com/":
+        ("https://www.kogan.com/", 0.5, 11),
+
+    "https://www.dicksmith.com.au/da/":
+        ("https://www.dicksmith.com.au/da/", 0.5, 12),
 }
 
 
 def scrap(given_name: str, given_url, given_model_no=None):
     try:
         selected = url[given_url]
-    except:
-        selected = ("https://www.example.com.au/s?k=", 0.5, 0)
+    except Exception as e:
+        sys.exit(e)
 
     url_id = selected[2]
     scrape_url = selected[0]
@@ -98,6 +115,30 @@ def scrap(given_name: str, given_url, given_model_no=None):
         else:
             scrape_data = JbHiFi.run(given_name, scrape_url)
 
+    if url_id == 9:
+        if given_model_no is not None:
+            scrape_data = OfficeWorks.run(given_name, scrape_url, given_model_no)
+        else:
+            scrape_data = OfficeWorks.run(given_name, scrape_url)
+
+    if url_id == 10:
+        if given_model_no is not None:
+            scrape_data = BingLee.run(given_name, scrape_url, given_model_no)
+        else:
+            scrape_data = BingLee.run(given_name, scrape_url)
+
+    if url_id == 11:
+        if given_model_no is not None:
+            scrape_data = Kogan.run(given_name, scrape_url, given_model_no)
+        else:
+            scrape_data = Kogan.run(given_name, scrape_url)
+
+    if url_id == 12:
+        if given_model_no is not None:
+            scrape_data = DickSmith.run(given_name, scrape_url, given_model_no)
+        else:
+            scrape_data = DickSmith.run(given_name, scrape_url)
+
     return scrape_data, get_filter_level
 
 
@@ -116,7 +157,7 @@ if __name__ == '__main__':
         else:
             data, filter_level = scrap(name, abs_url)
         if len(data) < 1:
-            print(f'No data found for: {name}')
+            print(f'No data matched for the query..')
             continue
 
         filtered_data, time = obj.filter(name, data, filter_level)

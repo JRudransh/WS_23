@@ -21,7 +21,7 @@ def find_model(name):
                 model = i
                 return model_found, model
             except:
-                pass
+                model = None
     return model_found, model
 
 
@@ -45,12 +45,12 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.jbhifi.com.au/",
-            "product_scrap": "Samsung Galaxy S20",
+            "url_scrap": "https://www.amazon.com.au/",
+            "product_scrap": "HP EliteBook 850 G7 15.6 inches i5 8GB 256GB SSD",
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
-            "price": 50.0,
+            "price": 5,
             "variancepercentage": 0,
             "status": 0,
             "seller": "xtrem"
@@ -68,7 +68,7 @@ def get_data():
 def post_data(data_list, min_price, competion, comp_price, time, url, prd):
     response = None
     uploaded = False
-    upload = []
+    upload = ''
     for data in data_list:
         sub = {
             "siteUrl": url,
@@ -79,7 +79,8 @@ def post_data(data_list, min_price, competion, comp_price, time, url, prd):
             "competitionPrice": comp_price,
             "seller": data['merchant'],
             "processing_time": data['time'] + time,
-            "competionName": competion
+            "competionName": competion,
+            "productUrl": data['url']
         }
         # For API
         # while True:
@@ -90,35 +91,47 @@ def post_data(data_list, min_price, competion, comp_price, time, url, prd):
         #     except:
         #         print('Can\'t post data retrying in 3 seconds')
         #         sleep(3)
-        if float(data['price']) == float(min_price):
+        if float(data['price']) == float(comp_price) and not uploaded:
             response = post(post_url, json=sub)
-            upload.append(sub)
+            upload = sub
+            uploaded = True
         # For Manual
         print(f"{sub['productName']}\n user price: {sub['userPrice']}, min price: {sub['minPrice']}, comp price: {sub['competitionPrice']} actual price: {data['price']}\n")
     print(f'\n\nuploaded data:-\n{upload}\n\n')
+    sleep(5)
     return response
 
 
 def calculate(data_list, price):
     p_l = []
     m_l = []
+    min_price = '0'
+    comp_price = '0'
+    comp = 'NA'
     for i in data_list:
         if i['price'] != '0':
             p_l.append(i['price'])
             m_l.append((i['merchant'], i['price']))
     try:
-        min_price = min(p_l)
-    except:
-        min_price = '0'
-    p_l.sort()
+        p_l.sort()
+        min_price = p_l[0]
+        for i in m_l:
+            if i[0] == min_price:
+                comp = i[1]
+                break
+            else:
+                comp = 'NA'
+    except Exception as e:
+        print(e)
 
-    for p in p_l:
-        if float(p) > price:
-            for m in m_l:
-                if m[1] == p:
-                    return min_price, m[0], m[1]
+    m_p = min_price if float(price) >= float(min_price) else price
+    for i in m_l:
+        if i[1] == min_price:
+            comp_price = i[1]
+            comp = i[0]
+            break
 
-    return min_price, 'NA', 0
+    return m_p, comp, comp_price
 
 
 def clean_text(string: str):
@@ -135,15 +148,21 @@ def clean_price(string: str):
     for char in string:
         if char in acceptable:
             price = price + char
-    return price
+
+    p = price.split('.')
+    if len(p) <= 2:
+        return price
+    else:
+        main_price = f'{p[0]}.{p[1]}'
+        return clean_price(main_price)
 
 
 def sort_price(data_list: list):
     price_list = [n['price'] for n in data_list]
     try:
         price_list.sort(reverse=False)
-    except:
-        pass
+    except Exception as e:
+        error = e
     data_sorted = []
     for price in price_list:
         for single_data in data_list:

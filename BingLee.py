@@ -1,7 +1,11 @@
 from selenium import webdriver
 from datetime import datetime
-import time
 from Functions import clean_text, clean_price
+from selenium.webdriver.common.keys import Keys
+from time import sleep
+
+
+win_open = False
 
 
 def scrap(given_name: str, given_url, given_model_no=None):
@@ -12,15 +16,31 @@ def scrap(given_name: str, given_url, given_model_no=None):
     :return: List of Scraped data, Data error count and Keyword
     """
     browser = webdriver.Firefox()
-    browser.minimize_window()
+    # browser.minimize_window()
+    browser.get(given_url)
 
-    inp_name = given_name.replace(' ', '+').lower()
+    while True:
+        try:
+            input_field = browser.find_element_by_id('search')
+            break
+        except:
+            input('Solve captcha and press enter:')
 
-    search_url = given_url + inp_name
+    input_field.clear()
+    for char in given_name:
+        input_field.send_keys(char)
+        sleep(0.3)
+    sleep(1)
+    input_field.send_keys(Keys.RETURN)
 
-    browser.get(search_url)
+    sleep(3)
 
-    items = browser.find_elements_by_css_selector('.ais-hits--item.ais-hits--item')
+    while True:
+        try:
+            items = browser.find_elements_by_css_selector('.item.col-sm-4.col-xs-6')
+            break
+        except:
+            input('Solve captcha and press enter:')
 
     print(f'{len(items)} Results Found for: {given_name}')
 
@@ -30,19 +50,29 @@ def scrap(given_name: str, given_url, given_model_no=None):
             t1 = datetime.now()
 
             try:
-                title = clean_text(prd_data.find_elements_by_css_selector('.ais-hit--title.product-tile__title')[0].text)
+                while True:
+                    try:
+                        title = clean_text(prd_data.find_elements_by_css_selector('.product-name')[0].text)
+                        url = prd_data.find_elements_by_css_selector('a.bni')[0].get_attribute('href')
+                        break
+                    except:
+                        input('Solve captcha and press enter:')
                 # print(title)
-                url = prd_data.find_elements_by_css_selector('.product-tile')[0].get_attribute('href')
             except IndexError:
                 continue
 
             try:
-                p = prd_data.find_elements_by_css_selector('span.sale')[0].text
+                while True:
+                    try:
+                        p = prd_data.find_elements_by_css_selector('span.price')[0].text
+                        break
+                    except:
+                        input('Solve captcha and press enter:')
                 prd_price = clean_price(p)
                 if prd_price == '':
                     a = [][2]
             except IndexError:
-                p = prd_data.find_elements_by_css_selector('span.ais-hit--price.price')[0].text
+                p = prd_data.find_elements_by_css_selector('span.price')[0].text
                 prd_price = clean_price(p)
             except Exception as e:
                 print(f'\n{e} price\n{title}\n\n')
@@ -71,7 +101,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
     try:
         browser.quit()
     except:
-        pass
+        print('Clear..')
     return data_list
 
 

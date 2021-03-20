@@ -15,7 +15,7 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
 
     items = r.html.find(".sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.sg-col-4-of-20")
 
-    print(f'{len(items)} Data Found for: {given_name}')
+    print(f'{len(items)} Results Found for: {given_name}')
 
     link_list = []
     f_link_list = []
@@ -90,7 +90,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'price': prd_price,
                 'timestamp': timestamp,
                 'merchant': merchant,
-                'time': (datetime.now() - t1).total_seconds()
+                'time': (datetime.now() - t1).total_seconds(),
+                'url': link
             }
             data_list.append(main)
         except AttributeError:

@@ -15,7 +15,7 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
 
     items = r.html.find(".s-item")
 
-    print(f'{len(items)} Data Found for: {given_name}')
+    print(f'{len(items)} Results Found for: {given_name}')
 
     link_list = []
     f_link_list = []
@@ -68,7 +68,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
                     print('Error while getting data..\nRetrying in 2 seconds..')
                     time.sleep(2)
             try:
-                title = clean_text(prd_data.html.find('#itemTitle')[0].text)
+                title = clean_text(prd_data.html.find('#itemTitle')[0].text).replace('Details about ', '')
             except IndexError:
                 continue
 
@@ -90,7 +90,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'price': prd_price,
                 'timestamp': timestamp,
                 'merchant': merchant,
-                'time': (datetime.now() - t1).total_seconds()
+                'time': (datetime.now() - t1).total_seconds(),
+                'url': link
             }
             data_list.append(main)
         except AttributeError:
@@ -100,7 +101,6 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
 
 def run(name, given_url, given_model_no=None):
-
     data = scrap(name, given_url, given_model_no)
 
     return data
