@@ -45,8 +45,8 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.harveynorman.com.au/",
-            "product_scrap": 'HP AMD Laptop',
+            "url_scrap": "https://www.mobileciti.com.au/",
+            "product_scrap": 'lenovo ideapad',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
