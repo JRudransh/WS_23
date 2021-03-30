@@ -50,20 +50,20 @@ def scrap(given_name: str, given_url, given_model_no=None):
         return []
 
     data_list = []
-    n = 1
+    number = 1
     for link in links:
-        print(f'Getting data from link {n} of {len(links)}...')
+        print(f'Getting data from link {number} of {len(links)}...')
         url = link.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].attrs['href']
         session = HTMLSession()
         r = session.get(url)
 
-        n += 1
+        number += 1
         try:
             t1 = datetime.now()
 
             try:
                 title = clean_text(r.html.find('.product-name')[0].text)
-                sku = ''.join(i.text for i in r.html.find('.product-id'))
+                sku = r.html.find('.product-id.meta.quiet.p_txt-sm')[-1].text
             except IndexError:
                 continue
             except Exception as e:
