@@ -45,7 +45,7 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.thegoodguys.com.au/",
+            "url_scrap": "https://www.harveynorman.com.au/",
             "product_scrap": 'HP AMD Laptop',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
@@ -65,7 +65,7 @@ def get_data():
     return True, name, price, seller, prd
 
 
-def post_data(data_list, min_price, competion, comp_price, time, url, prd):
+def post_data(data_list, min_price, competition, comp_price, time, url, prd):
     response = None
     uploaded = False
     upload = ''
@@ -84,7 +84,7 @@ def post_data(data_list, min_price, competion, comp_price, time, url, prd):
             "competitionPrice": comp_price,
             "seller": data['merchant'],
             "processing_time": data['time'] + time,
-            "competionName": competion,
+            "competionName": competition,
             "productUrl": data['url'],
             "sku": sku,
         }

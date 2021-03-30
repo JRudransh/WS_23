@@ -51,9 +51,9 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
     data_list = []
     n = 1
-    for r.html in links:
+    for link in links:
         print(f'Getting data from link {n} of {len(links)}...')
-        url = r.html.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].attrs['href']
+        url = link.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].attrs['href']
         session = HTMLSession()
         r = session.get(url)
 
@@ -64,8 +64,6 @@ def scrap(given_name: str, given_url, given_model_no=None):
             try:
                 title = clean_text(r.html.find('.product-name')[0].text)
                 sku = ''.join(i.text for i in r.html.find('.product-id'))
-                print(sku)
-                input()
             except IndexError:
                 continue
             except Exception as e:
@@ -80,10 +78,9 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 prd_price = '0'
 
             try:
-                merchant = clean_text(r.html.find('#sellerProfileTriggerId')[0].text)
+                merchant = clean_text(r.html.find('#sellerProfile')[0].text)
             except Exception as e:
                 n = e
-                # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
             timestamp = datetime.now()
