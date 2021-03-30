@@ -73,14 +73,31 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 continue
 
             try:
+                table = prd_data.html.find('tr')
+                sku = ''
+                for row in table:
+                    try:
+                        th = row.text
+                        if 'model' in th.lower() and 'number' in th.lower():
+                            sku = row.find('td')[0].text
+                            break
+                    except IndexError:
+                        continue
+            except Exception as e:
+                exc = e
+                sku = ''
+
+            try:
                 prd_price = clean_price(prd_data.html.find('#price_inside_buybox')[0].text)
             except Exception as e:
+                exc = e
                 # print(f'\n{e} price\n{title}\n\n')
                 prd_price = '0'
 
             try:
                 merchant = clean_text(prd_data.html.find('#sellerProfileTriggerId')[0].text)
             except Exception as e:
+                exc = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
@@ -91,11 +108,12 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'timestamp': timestamp,
                 'merchant': merchant,
                 'time': (datetime.now() - t1).total_seconds(),
-                'url': link
+                'url': link,
+                'sku': sku,
             }
             data_list.append(main)
         except AttributeError:
-            pass
+            print('Error 0005')
 
     return data_list
 

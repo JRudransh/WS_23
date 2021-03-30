@@ -45,8 +45,8 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.amazon.com.au/",
-            "product_scrap": "HP EliteBook 850 G7 15.6 inches i5 8GB 256GB SSD",
+            "url_scrap": "https://www.thegoodguys.com.au/",
+            "product_scrap": 'HP AMD Laptop',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
@@ -70,6 +70,11 @@ def post_data(data_list, min_price, competion, comp_price, time, url, prd):
     uploaded = False
     upload = ''
     for data in data_list:
+        try:
+            sku = data['sku']
+        except Exception as e:
+            n = e
+            sku = ''
         sub = {
             "siteUrl": url,
             "productName": data['name'],
@@ -80,7 +85,8 @@ def post_data(data_list, min_price, competion, comp_price, time, url, prd):
             "seller": data['merchant'],
             "processing_time": data['time'] + time,
             "competionName": competion,
-            "productUrl": data['url']
+            "productUrl": data['url'],
+            "sku": sku,
         }
         # For API
         # while True:
@@ -124,7 +130,12 @@ def calculate(data_list, price):
     except Exception as e:
         print(e)
 
-    m_p = min_price if float(price) >= float(min_price) else price
+    try:
+        m_p = min_price if float(price) >= float(min_price) else price
+    except Exception as e:
+        print(e)
+        m_p = min_price
+
     for i in m_l:
         if i[1] == min_price:
             comp_price = i[1]

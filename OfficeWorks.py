@@ -32,7 +32,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
             try:
                 title = clean_text(prd_data.find_elements_by_css_selector('.DefaultProductTile__ProductName-dfe2sm-1'
                                                                           '.dRgJNf')[0].text)
-                url = browser.find_elements_by_css_selector('a')[0].get_attribute('href')
+                url = prd_data.find_elements_by_css_selector('a')[0].get_attribute('href')
                 # print(title)
             except IndexError:
                 continue
@@ -71,7 +71,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
             print(e, end=' AT GET DATA')
     try:
         browser.quit()
-    except:
+    except Exception as e:
+        print(e)
         pass
     return data_list
 

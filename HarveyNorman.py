@@ -21,7 +21,6 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
     for item in items:
         try:
             links = item.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].text
-            url = item.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].attrs['href']
             if given_model_no is not None:
                 if given_model_no in links:
                     f_link_list.append(item)
@@ -32,7 +31,7 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
             print(e, end=" in GET LINKS\n\n")
 
     ret = f_link_list if given_model_no is not None else items
-    return ret, url
+    return ret
 
 
 def scrap(given_name: str, given_url, given_model_no=None):
@@ -43,35 +42,47 @@ def scrap(given_name: str, given_url, given_model_no=None):
     :return: List of Scraped data, Data error count and Keyword
     """
     if given_model_no is not None:
-        data, url = get_links(given_name, given_url, given_model_no)
+        links = get_links(given_name, given_url, given_model_no)
     else:
-        data, url = get_links(given_name, given_url)
+        links = get_links(given_name, given_url)
 
-    if len(data) < 1:
+    if len(links) < 1:
         return []
 
     data_list = []
     n = 1
-    for prd_data in data:
-        print(f'Getting data from link {n} of {len(data)}...')
+    for r.html in links:
+        print(f'Getting data from link {n} of {len(links)}...')
+        url = r.html.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].attrs['href']
+        session = HTMLSession()
+        r = session.get(url)
+
         n += 1
         try:
             t1 = datetime.now()
 
             try:
-                title = clean_text(prd_data.find('.name.fn.l_mgn-tb-sm.l_dsp-blc')[0].text)
+                title = clean_text(r.html.find('.product-name')[0].text)
+                sku = ''.join(i.text for i in r.html.find('.product-id'))
+                print(sku)
+                input()
             except IndexError:
+                continue
+            except Exception as e:
+                n = e
                 continue
 
             try:
-                prd_price = clean_price(prd_data.find('.price')[0].text)
+                prd_price = clean_price(r.html.find('.price')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n{e} price\n{title}\n\n')
                 prd_price = '0'
 
             try:
-                merchant = clean_text(prd_data.find('#sellerProfileTriggerId')[0].text)
+                merchant = clean_text(r.html.find('#sellerProfileTriggerId')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
@@ -82,7 +93,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'timestamp': timestamp,
                 'merchant': merchant,
                 'time': (datetime.now() - t1).total_seconds(),
-                'url': url
+                'url': url,
+                'sku': sku,
             }
             data_list.append(main)
         except AttributeError:
@@ -92,7 +104,6 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
 
 def run(name, given_url, given_model_no=None):
-
     data = scrap(name, given_url, given_model_no)
 
     return data

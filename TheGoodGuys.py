@@ -21,7 +21,6 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
     for item in items:
         try:
             links = item.find('.product-tile-name')[0].text
-            url = item.find('.product-tile-name')[0].attrs['href']
             if given_model_no is not None:
                 if given_model_no in links:
                     f_link_list.append(item)
@@ -32,7 +31,7 @@ def get_links(given_name: str, given_url: str, given_model_no=None):
             print(e, end=" in GET LINKS\n\n")
 
     ret = f_link_list if given_model_no is not None else items
-    return ret, url
+    return ret
 
 
 def scrap(given_name: str, given_url, given_model_no=None):
@@ -43,9 +42,9 @@ def scrap(given_name: str, given_url, given_model_no=None):
     :return: List of Scraped data, Data error count and Keyword
     """
     if given_model_no is not None:
-        data, url = get_links(given_name, given_url, given_model_no)
+        data = get_links(given_name, given_url, given_model_no)
     else:
-        data, url = get_links(given_name, given_url)
+        data = get_links(given_name, given_url)
 
     if len(data) < 1:
         return []
@@ -60,18 +59,27 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
             try:
                 title = clean_text(prd_data.find('.product-tile-name')[0].text)
+                url = prd_data.find('a.disp-block')[0].attrs['href']
             except IndexError:
                 continue
 
             try:
+                sku = prd_data.find('.product-tile-model')[0].text
+            except Exception as e:
+                exc = e
+                sku = ''
+
+            try:
                 prd_price = clean_price(prd_data.find('.pricepoint-price')[0].text)
             except Exception as e:
+                exc = e
                 # print(f'\n{e} price\n{title}\n\n')
                 prd_price = '0'
 
             try:
                 merchant = clean_text(prd_data.find('#sellerProfileTriggerId')[0].text)
             except Exception as e:
+                exc = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
@@ -82,7 +90,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'timestamp': timestamp,
                 'merchant': merchant,
                 'time': (datetime.now() - t1).total_seconds(),
-                'url': url
+                'url': url,
+                'sku': sku,
             }
             data_list.append(main)
         except AttributeError:

@@ -53,7 +53,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 while True:
                     try:
                         title = clean_text(prd_data.find_elements_by_css_selector('._1A_Xq>a')[0].text)
-                        url = clean_text(prd_data.find_elements_by_css_selector('._1A_Xq>a')[0].text)
+                        url = prd_data.find_element_by_css_selector('._1A_Xq>a').get_attribute('href')
                         print(title)
                         break
                     except:

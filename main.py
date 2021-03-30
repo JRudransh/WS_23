@@ -16,43 +16,43 @@ from Functions import get_data, post_data, Compare, calculate, find_model
 
 url = {
     "https://www.amazon.com.au/":
-        ("https://www.amazon.com.au/s?k=", 0.5, 1),
+        ("https://www.amazon.com.au/s?k=", 0.1, 1),
 
     "https://www.harveynorman.com.au/":
-        ("https://www.harveynorman.com.au/catalogsearch/result/?q=", 0.5, 2),
+        ("https://www.harveynorman.com.au/catalogsearch/result/?q=", 0.1, 2),
 
     "https://www.thegoodguys.com.au/":
         ("https://www.thegoodguys.com.au/SearchDisplay?categoryId=&storeId=900"
          "&catalogId=30000&langId=-1&sType=SimpleSearch&resultCatEntryType=2"
          "&showResultsPage=true&searchSource=Q&pageView=&beginIndex=0&orderBy=0"
-         "&pageSize=60&searchTerm= ", 0.5, 3),
+         "&pageSize=60&searchTerm= ", 0.1, 3),
 
     "https://www.becextech.com.au/":
-        ("https://www.becextech.com.au/catalog/advanced_search_result.php?keywords=", 0.5, 4),
+        ("https://www.becextech.com.au/catalog/advanced_search_result.php?keywords=", 0.1, 4),
 
     "https://www.catch.com.au/":
-        ("https://www.catch.com.au/search?query=", 0.5, 5),
+        ("https://www.catch.com.au/search?query=", 0.1, 5),
 
     "https://www.mobileciti.com.au/":
-        ("https://www.mobileciti.com.au/catalogsearch/result/?q=", 0.5, 6),
+        ("https://www.mobileciti.com.au/catalogsearch/result/?q=", 0.1, 6),
 
     "https://www.ebay.com.au/":
-        ("https://www.ebay.com.au/sch/i.html?_nkw=", 0.5, 7),
+        ("https://www.ebay.com.au/sch/i.html?_nkw=", 0.1, 7),
 
     "https://www.jbhifi.com.au/":
-        ("https://www.jbhifi.com.au/?query=", 0.5, 8),
+        ("https://www.jbhifi.com.au/?query=", 0.1, 8),
 
     "https://www.officeworks.com.au/":
-        ("https://www.officeworks.com.au/shop/officeworks/search?q={}&view=grid&page=1&sortBy=bestmatch", 0.5, 9),
+        ("https://www.officeworks.com.au/shop/officeworks/search?q={}&view=grid&page=1&sortBy=bestmatch", 0.1, 9),
 
     "https://www.binglee.com.au/":
-        ("https://www.binglee.com.au/", 0.5, 10),
+        ("https://www.binglee.com.au/", 0.1, 10),
 
     "https://www.kogan.com/":
-        ("https://www.kogan.com/", 0.5, 11),
+        ("https://www.kogan.com/", 0.1, 11),
 
     "https://www.dicksmith.com.au/da/":
-        ("https://www.dicksmith.com.au/da/", 0.5, 12),
+        ("https://www.dicksmith.com.au/da/", 0.1, 12),
 }
 
 
@@ -145,27 +145,29 @@ def scrap(given_name: str, given_url, given_model_no=None):
 if __name__ == '__main__':
     obj = Compare()
     while True:
-        # input('Press ENTER key to start:')
-        resp, name, price, seller, prd = get_data()
-        if not resp:
-            print("Data error..")
-            continue
-        model_found, model_no = find_model(name)
-        abs_url = prd['url_scrap']
-        if model_found:
-            data, filter_level = scrap(name, abs_url, model_no)
-        else:
-            data, filter_level = scrap(name, abs_url)
-        if len(data) < 1:
-            print(f'No data matched for the query..')
-            continue
+        try:
+            resp, name, price, seller, prd = get_data()
+            if not resp:
+                print("Data error..")
+                continue
+            model_found, model_no = find_model(name)
+            abs_url = prd['url_scrap']
+            if model_found:
+                data, filter_level = scrap(name, abs_url, model_no)
+            else:
+                data, filter_level = scrap(name, abs_url)
+            if len(data) < 1:
+                print(f'No data matched for the query..')
+                continue
 
-        filtered_data, time = obj.filter(name, data, filter_level)
-        if len(filtered_data) < 1:
-            # For testing replace it with break
-            continue
-        min_price, comp, comp_price = calculate(filtered_data, price)
-        post_data(filtered_data, min_price, comp, comp_price, time, abs_url, prd)
+            filtered_data, time = obj.filter(name, data, filter_level)
+            if len(filtered_data) < 1:
+                # For testing replace it with break
+                continue
+            min_price, comp, comp_price = calculate(filtered_data, price)
+            post_data(filtered_data, min_price, comp, comp_price, time, abs_url, prd)
 
-        # Comment the line below for api part
-        # break
+            # Comment the line below for api part
+            # break
+        except Exception as e:
+            print(f'\n\n\n\n{e}\n\n\n\n')

@@ -1,6 +1,6 @@
 from selenium import webdriver
 from datetime import datetime
-import time
+from  time import sleep
 from Functions import clean_text, clean_price
 
 
@@ -19,6 +19,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
     search_url = given_url + inp_name
 
     browser.get(search_url)
+
+    sleep(2)
 
     items = browser.find_elements_by_css_selector('.ais-hits--item.ais-hits--item')
 
