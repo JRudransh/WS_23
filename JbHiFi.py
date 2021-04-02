@@ -53,6 +53,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
             try:
                 merchant = clean_text(prd_data.find_elements_by_css_selector('.merchant')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
@@ -63,7 +64,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 'timestamp': timestamp,
                 'merchant': merchant,
                 'time': (datetime.now() - t1).total_seconds(),
-                'url': url
+                'url': url,
+                'sku': False,
             }
             data_list.append(main)
         except AttributeError:
@@ -72,7 +74,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
             print(e, end=' AT GET DATA')
     try:
         browser.quit()
-    except:
+    except Exception as e:
+        n = e
         pass
     return data_list
 

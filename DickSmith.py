@@ -71,12 +71,14 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 p = prd_data.find_elements_by_css_selector('._2PrMB')[0].text
                 prd_price = clean_price(p)
             except Exception as e:
-                print(f'\n{e} price\n{title}\n\n')
+                n = e
+                # print(f'\n{e} price\n{title}\n\n')
                 prd_price = '0'
 
             try:
                 merchant = clean_text(prd_data.find_elements_by_css_selector('.merchant')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 

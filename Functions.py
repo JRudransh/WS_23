@@ -2,6 +2,7 @@ from time import sleep
 from datetime import datetime
 from requests import get, post
 from string import punctuation
+from selenium import webdriver
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -45,8 +46,8 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.mobileciti.com.au/",
-            "product_scrap": 'lenovo ideapad',
+            "url_scrap": "https://www.jbhifi.com.au/",
+            "product_scrap": 'Asus Laptop M515DA',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
@@ -74,7 +75,7 @@ def post_data(data_list, min_price, competition, comp_price, time, url, prd):
             sku = data['sku']
         except Exception as e:
             n = e
-            sku = ''
+            sku = 'NA'
         sub = {
             "siteUrl": url,
             "productName": data['name'],
@@ -98,6 +99,8 @@ def post_data(data_list, min_price, competition, comp_price, time, url, prd):
         #         print('Can\'t post data retrying in 3 seconds')
         #         sleep(3)
         if float(data['price']) == float(comp_price) and not uploaded:
+            if not sub['sku']:
+                sub["sku"] = get_sku(data['url'])
             response = post(post_url, json=sub)
             upload = sub
             uploaded = True
@@ -106,6 +109,37 @@ def post_data(data_list, min_price, competition, comp_price, time, url, prd):
     print(f'\n\nuploaded data:-\n{upload}\n\n')
     sleep(5)
     return response
+
+
+def get_sku(url):
+    print(url)
+    browser = webdriver.Firefox()
+    # browser.minimize_window()
+    browser.get(url)
+    sku = 'NA'
+    try:
+        try:
+            sku = browser.find_element_by_id('product-code').text
+        except Exception as e:
+            n = e
+
+        if len(sku) < 3:
+            try:
+                sku = browser.find_elements_by_css_selector('.product-meta.prod-code>dd')[1].text
+            except Exception as e:
+                n = e
+
+        if len(sku) < 3:
+            try:
+                sku = browser.find_elements_by_css_selector('.product-highlight>li')[0].text.split(' ')[-1]
+            except Exception as e:
+                n = e
+                sku = 'NA'
+    except Exception as e:
+        n = e
+
+    browser.quit()
+    return sku
 
 
 def calculate(data_list, price):

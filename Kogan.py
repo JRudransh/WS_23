@@ -74,6 +74,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
             try:
                 merchant = clean_text(prd_data.find_elements_by_css_selector('.Ajuewl')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 
@@ -93,7 +94,8 @@ def scrap(given_name: str, given_url, given_model_no=None):
             print(e, end=' AT GET DATA')
     try:
         browser.quit()
-    except:
+    except Exception as e:
+        n = e
         print('Clear..')
     return data_list
 

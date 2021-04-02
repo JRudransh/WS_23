@@ -66,12 +66,14 @@ def scrap(given_name: str, given_url, given_model_no=None):
             try:
                 prd_price = clean_price(prd_data.find('.price--dollars')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n{e} price\n{title}\n\n')
                 prd_price = '0'
 
             try:
                 merchant = clean_text(prd_data.find('.product--seller')[0].text)
             except Exception as e:
+                n = e
                 # print(f'\n\n{e} marchant \n{title}\n\n')
                 merchant = 'NA'
 

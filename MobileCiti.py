@@ -68,7 +68,6 @@ def scrap(given_name: str, given_url, given_model_no=None):
 
             try:
                 sku = r.html.find('.product-info-main>p>strong')[0].text
-                print(sku)
             except Exception as e:
                 print(e)
                 sku = ''
