@@ -71,7 +71,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
                 continue
 
             try:
-                prd_price = clean_price(r.html.find('.price')[0].text)
+                prd_price = clean_price(r.html.find('.price-device>script')[0].text)
             except Exception as e:
                 n = e
                 # print(f'\n{e} price\n{title}\n\n')

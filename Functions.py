@@ -46,8 +46,8 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.jbhifi.com.au/",
-            "product_scrap": 'Asus Laptop M515DA',
+            "url_scrap": "https://www.harveynorman.com.au/",
+            "product_scrap": 'Asus Tuf gaming',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
