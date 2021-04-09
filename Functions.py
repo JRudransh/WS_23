@@ -46,7 +46,7 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.harveynorman.com.au/",
+            "url_scrap": "https://www.jbhifi.com.au/",
             "product_scrap": 'Asus Tuf gaming',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
@@ -118,23 +118,23 @@ def get_sku(url):
     browser.get(url)
     sku = 'NA'
     try:
-        try:
-            sku = browser.find_element_by_id('product-code').text
-        except Exception as e:
-            n = e
+        if 'binglee' in url:
+            try:
+                sku = browser.find_elements_by_css_selector('.product-highlight>li')[0].text.split(' ')[-1]
+            except Exception as e:
+                n = e
+        if 'officeworks' in url:
+            try:
+                sku = browser.find_element_by_id('product-code').text
+            except Exception as e:
+                n = e
 
-        if len(sku) < 3:
+        if 'jbhifi' in url:
             try:
                 sku = browser.find_elements_by_css_selector('.product-meta.prod-code>dd')[1].text
             except Exception as e:
                 n = e
 
-        if len(sku) < 3:
-            try:
-                sku = browser.find_elements_by_css_selector('.product-highlight>li')[0].text.split(' ')[-1]
-            except Exception as e:
-                n = e
-                sku = 'NA'
     except Exception as e:
         n = e
 
