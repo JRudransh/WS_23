@@ -145,7 +145,7 @@ def scrap(given_name: str, given_url, given_model_no=None):
 if __name__ == '__main__':
     obj = Compare()
     while True:
-        # try:
+        try:
             resp, name, price, seller, prd = get_data()
             if not resp:
                 print("Data error..")
@@ -169,5 +169,5 @@ if __name__ == '__main__':
 
             # Comment the line below for api part
             # break
-        # except Exception as e:
-        #     print(f'\n\n\n\n{e}\n\n\n\n')
+        except Exception as e:
+            print(f'\n\n\n\n{e}\n\n\n\n')
