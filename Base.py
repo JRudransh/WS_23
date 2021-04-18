@@ -298,8 +298,17 @@ class Scraper:
         time.sleep(5)
         return response
 
-    def run(self):
-        self.scrap()
-        self.filter()
-        self.calculate()
-        self.post_data()
+    def run_once(self):
+        try:
+            self.scrap()
+            self.filter()
+            self.calculate()
+            self.post_data()
+        except Exception as e:
+            error = f'{e} in Running the main loop\n'
+            print(error) if self.DEBUG else None
+
+    def run_loop(self):
+        while True:
+            self.run_once()
+
