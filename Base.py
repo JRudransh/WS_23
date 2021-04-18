@@ -1,14 +1,12 @@
 from requests_html import HTMLSession
-from datetime import datetime
 import time
 from datetime import datetime
 from requests import get, post
 from string import punctuation
-from selenium import webdriver
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 from Settings import *
-from Functions import clean_text, clean_price
+from Functions import Sku
 
 
 class Scraper:
@@ -17,41 +15,31 @@ class Scraper:
     price = int
     seller = str
     prd = dict
+    search_url = str
+    time = 0.0
+    selector = str
+    url_name = str
+    comp_price = float
+    competition = float
+    min_price = float
 
-    def __init__(self, given_name: str, given_url: str):
-        self.inp_name = given_name.replace(' ', '+').lower()
+    SELENIUM = False
+
+    def __init__(self):
+        self.given_url = ''
         self.session = HTMLSession()
-        self.search_url = given_url + self.inp_name
-        self.given_name = given_name
         self.data_list = []
+        self.data_sorted = []
+        self.DEBUG = DEBUG
 
-        self.selector = {
-            'items': '.sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.sg-col-4-of-20',
-            'title': '#productTitle',
-            'links': '.a-link-normal.a-text-normal',
-            'merchant': '#sellerProfileTriggerId',
-            'price': '#price_inside_buybox',
-        }
+    def get_sku(self, url):
+        sku = Sku(url, self.DEBUG)
+        get_sku = getattr(sku, self.url_name)
+        return get_sku()
 
     def get_input(self):
-        if DEBUG:
-            data_dict = {
-                "responseCode": 200,
-                "responseMessage": "get scraping data from rabbitmq successfully",
-                "preferencePojo": {
-                    "preferenceId": 84,
-                    "userId": 1,
-                    "url_scrap": "https://www.jbhifi.com.au/",
-                    "product_scrap": 'Asus Tuf gaming',
-                    "createdDate": "2021-02-25 05:34:10",
-                    "category": "Mobile",
-                    "sku": "sku",
-                    "price": 5,
-                    "variancepercentage": 0,
-                    "status": 0,
-                    "seller": "xtrem"
-                }
-            }
+        if self.DEBUG:
+            data_dict = debug_data
         else:
             while True:
                 data_dict = get(get_url).json()
@@ -60,21 +48,30 @@ class Scraper:
                 else:
                     print('Data not available..')
                     time.sleep(4)
-            # For testing
             if data_dict['responseCode'] != 200:
                 return False
         self.prd = data_dict['preferencePojo']
         self.name = self.prd['product_scrap']
         self.price = self.prd['price']
         self.seller = self.prd['seller']
+        self.given_url = self.prd['url_scrap']
+        self.url_name = self.given_url.split('.')[1]
         return True
 
     def get_links(self):
+        self.get_input()
+
+        self.selector = site_data[self.url_name]['selector']
+
+        self.given_url = site_data[self.url_name]['url']
+
+        self.search_url = self.given_url.replace('{}', self.name)
+
         r = self.session.get(url=self.search_url)
 
         items = r.html.find(self.selector['items'])
 
-        print(f'{len(items)} Results Found for: {self.given_name}')
+        print(f'{len(items)} Results Found for: {self.name}')
 
         link_list = []
 
@@ -86,23 +83,30 @@ class Scraper:
             except Exception as e:
                 error = f'{e} in HTML session get links..\n'
                 message = 'Error while getting links..'
-                print(error, message) if DEBUG else print(message)
+                print(error, message) if self.DEBUG else print(message)
         return link_list
 
     @staticmethod
-    def find_sku(prd_data):
-        lookup_field = 'tr'
-        my_table = prd_data.html.find(lookup_field)
-        sku = ''
-        for row in my_table:
-            try:
-                th = row.text
-                if 'model' in th.lower() and 'number' in th.lower():
-                    sku = row.find('td')[0].text
-                    break
-            except IndexError:
-                continue
-        return sku
+    def clean_text(string: str):
+        text = ''
+        for char in string:
+            if char not in punctuation.replace('()', '').replace('&', ''):
+                text = text + char
+        return text
+
+    def clean_price(self, string: str):
+        price = ''
+        acceptable = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.']
+        for char in string:
+            if char in acceptable:
+                price = price + char
+
+        p = price.split('.')
+        if len(p) <= 2:
+            return price
+        else:
+            main_price = f'{p[0]}.{p[1]}'
+            return self.clean_price(main_price)
 
     def scrap(self):
         """
@@ -127,34 +131,26 @@ class Scraper:
                     except Exception as e:
                         error = f'{e} in HTML session get link -- {n}\n'
                         message = 'Error while getting data..\nRetrying in 2 seconds..'
-                        print(error, message) if DEBUG else print(message)
+                        print(error, message) if self.DEBUG else print(message)
                         time.sleep(2)
                 try:
-                    title = clean_text(prd_data.html.find(self.selector['title'])[0].text)
+                    title = self.clean_text(prd_data.html.find(self.selector['title'])[0].text)
                 except IndexError as e:
                     error = f'{e} in HTML session get title -- {n}\n'
-                    print(error) if DEBUG else None
-                    continue
+                    print(error) if self.DEBUG else None
 
                 try:
-                    sku = self.find_sku(prd_data, n)
-                except Exception as e:
-                    error = f'{e} in HTML session find SKU -- {n}\n'
-                    print(error) if DEBUG else None
-                    sku = ''
-
-                try:
-                    prd_price = clean_price(prd_data.html.find(self.selector['price'])[0].text)
+                    prd_price = self.clean_price(prd_data.html.find(self.selector['price'])[0].text)
                 except Exception as e:
                     error = f'{e} in HTML session find Price -- {n}\n'
-                    print(error) if DEBUG else None
+                    print(error) if self.DEBUG else None
                     prd_price = '0'
 
                 try:
-                    merchant = clean_text(prd_data.html.find(self.selector['merchant'])[0].text)
+                    merchant = self.clean_text(prd_data.html.find(self.selector['merchant'])[0].text)
                 except Exception as e:
                     error = f'{e} in HTML session find Merchant -- {n}\n'
-                    print(error) if DEBUG else None
+                    print(error) if self.DEBUG else None
                     merchant = 'NA'
 
                 timestamp = datetime.now()
@@ -164,35 +160,128 @@ class Scraper:
                     'timestamp': timestamp,
                     'merchant': merchant,
                     'time': (datetime.now() - t1).total_seconds(),
-                    'url': link,
-                    'sku': sku,
+                    'url': link
                 }
                 self.data_list.append(main)
             except AttributeError as e:
                 error = f'{e} in HTML session no content found from link -- {n}\n'
-                print(error) if DEBUG else None
+                print(error) if self.DEBUG else None
 
-    def post_data(self, min_price, competition, comp_price, time_count, url, prd):
+    def sort_price(self):
+        price_list = [n['price'] for n in self.data_list]
+        try:
+            price_list.sort(reverse=False)
+        except Exception as e:
+            error = f'{e} in Price Sorting...\n'
+            print(error) if self.DEBUG else None
+        for price in price_list:
+            for single_data in self.data_list:
+                if single_data['price'] == price and single_data not in self.data_sorted:
+                    self.data_sorted.append(single_data)
+
+    @staticmethod
+    def clean_text_filter(given_string: str):
+        text = ''.join([word for word in given_string if word not in punctuation])
+        text = text.lower()
+        return text
+
+    @staticmethod
+    def cosine_sim_vectors(vec1, vec2):
+        vec1 = vec1.reshape(1, -1)
+        vec2 = vec2.reshape(1, -1)
+
+        return cosine_similarity(vec1, vec2)[0][0]
+
+    def filter(self):
+        t1 = datetime.now()
+        print(f'{len(self.data_list)} Data Found', end=' ')
+        words = []
+        for i in self.data_list:
+            words.append(i['name'])
+
+        words.append(self.name)
+        cleaned = list(map(self.clean_text_filter, words))
+        vectorized = CountVectorizer().fit_transform(cleaned)
+        vector = vectorized.toarray()
+        original = vector[-1]
+        products = vector[:-1]
+        filtered = []
+        n = 0
+        for product in products:
+            similarity = self.cosine_sim_vectors(product, original)
+            if similarity >= FILTER:
+                filtered.append(self.data_list[n])
+            n += 1
+        ret_data = []
+        for i in self.data_list:
+            for j in filtered:
+                if i == j:
+                    ret_data.append(i)
+        print(f'{len(ret_data)} will be uploaded..')
+        self.sort_price()
+        try:
+            self.time += (datetime.now() - t1).total_seconds() / len(self.data_list)
+        except Exception as e:
+            error = f'{e} in get time...\n'
+            print(error) if self.DEBUG else None
+
+    def calculate(self):
+        p_l = []
+        m_l = []
+        min_price = '0'
+        comp_price = '0'
+        comp = 'NA'
+        for i in self.data_list:
+            if i['price'] != '0':
+                p_l.append(i['price'])
+                m_l.append((i['merchant'], i['price']))
+        try:
+            p_l.sort()
+            min_price = p_l[0]
+            for i in m_l:
+                if i[0] == min_price:
+                    comp = i[1]
+                    break
+                else:
+                    comp = 'NA'
+        except Exception as e:
+            print(e)
+
+        try:
+            m_p = min_price if float(self.price) >= float(min_price) else self.price
+        except Exception as e:
+            print(e)
+            m_p = min_price
+
+        for i in m_l:
+            if i[1] == min_price:
+                comp_price = i[1]
+                comp = i[0]
+                break
+        self.min_price, self.competition, self.comp_price = m_p, comp, comp_price
+
+    def post_data(self):
         response = None
         uploaded = False
         upload = ''
-        for data in self.data_list:
+        for data in self.data_sorted:
             sub = {
-                "siteUrl": url,
+                "siteUrl": self.prd['url_scrap'],
                 "productName": data['name'],
-                "preferenceId": prd['preferenceId'],
-                "minPrice": min_price,
-                "userPrice": prd['price'],
-                "competitionPrice": comp_price,
+                "preferenceId": self.prd['preferenceId'],
+                "minPrice": self.min_price,
+                "userPrice": self.prd['price'],
+                "competitionPrice": self.comp_price,
                 "seller": data['merchant'],
-                "processing_time": data['time'] + time_count,
-                "competionName": competition,
+                "processing_time": data['time'] + self.time,
+                "competionName": self.competition,
                 "productUrl": data['url'],
             }
 
-            if float(data['price']) == float(comp_price) and not uploaded:
+            if float(data['price']) == float(self.comp_price) and not uploaded:
                 while True:
                     try:
+                        sub['sku'] = self.get_sku()
                         response = post(post_url, json=sub)
                         if response.status_code == 200:
                             print('Unable to reach server, Retrying...')
@@ -200,16 +289,17 @@ class Scraper:
 
                     except Exception as e:
                         error = f'{e} in Posting Data for {sub["productName"]}\n'
-                        print(error) if DEBUG else None
+                        print(error) if self.DEBUG else None
                         time.sleep(3)
 
                 upload = sub
                 uploaded = True
-            # For Manual
         print(f'\n\nUploaded data:-\n{upload}\n\n')
         time.sleep(5)
         return response
 
     def run(self):
-        data = self.scrap()
-        return data
+        self.scrap()
+        self.filter()
+        self.calculate()
+        self.post_data()
