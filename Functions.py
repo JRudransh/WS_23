@@ -23,3 +23,12 @@ class Sku:
             error = f'{e} in Getting SKU...\n'
             print(error) if self.DEBUG else None
         return sku
+
+    def ebay(self):
+        sku = ''
+        try:
+            sku = self.r.html.find('#descItemNumber')[0].text
+        except Exception as e:
+            error = f'{e} in Getting SKU...\n'
+            print(error) if self.DEBUG else None
+        return sku

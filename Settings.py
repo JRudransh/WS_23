@@ -75,11 +75,11 @@ site_data = {
     "ebay": {
         'url': "https://www.ebay.com.au/sch/i.html?_nkw={}",
         'selector': {
-            'items': '.sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.sg-col-4-of-20',
-            'title': '#productTitle',
-            'links': '.a-link-normal.a-text-normal',
-            'merchant': '#sellerProfileTriggerId',
-            'price': '#price_inside_buybox',
+            'items': '.s-item',
+            'title': '#itemTitle',
+            'links': '.s-item__link',
+            'merchant': 'span.mbg-nw',
+            'price': '#prcIsum',
         },
     },
 
@@ -112,7 +112,7 @@ debug_data = {
                 "preferencePojo": {
                     "preferenceId": 84,
                     "userId": 1,
-                    "url_scrap": "https://www.amazon.com.au/",
+                    "url_scrap": "https://www.ebay.com.au/",
                     "product_scrap": 'Asus Tuf gaming',
                     "createdDate": "2021-02-25 05:34:10",
                     "category": "Mobile",

@@ -281,7 +281,7 @@ class Scraper:
             if float(data['price']) == float(self.comp_price) and not uploaded:
                 while True:
                     try:
-                        sub['sku'] = self.get_sku()
+                        sub['sku'] = self.get_sku(sub['productUrl'])
                         response = post(post_url, json=sub)
                         if response.status_code == 200:
                             print('Unable to reach server, Retrying...')
