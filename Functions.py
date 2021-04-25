@@ -21,7 +21,8 @@ def find_model(name):
                 model_found = True
                 model = i
                 return model_found, model
-            except:
+            except Exception as e:
+                n = e
                 model = None
     return model_found, model
 
@@ -46,8 +47,8 @@ def get_data():
         "preferencePojo": {
             "preferenceId": 84,
             "userId": 1,
-            "url_scrap": "https://www.jbhifi.com.au/",
-            "product_scrap": 'Asus Tuf gaming',
+            "url_scrap": "https://www.amazon.com.au/",
+            "product_scrap": 'ASUS TUF Gaming A15 Gaming Laptop',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
@@ -66,11 +67,39 @@ def get_data():
     return True, name, price, seller, prd
 
 
+def sort_data(name, data_list):
+    l_name = list(set(name.lower().split()))
+    max_match = 0
+    matches = []
+    temp = {}
+    ret = []
+    for data in data_list:
+        p_list = list(set(data['name'].lower().split()))
+        for word in l_name:
+            if word in p_list:
+                max_match += 1
+
+        try:
+            temp[max_match].append(data)
+        except Exception as e:
+            n = e
+            temp[max_match] = [data]
+        matches.append(max_match)
+        max_match = 0
+
+    print(temp)
+    ret = temp[max(matches)]
+    print(ret)
+
+    return ret
+
+
 def post_data(data_list, min_price, competition, comp_price, time, url, prd):
     response = None
     uploaded = False
     upload = ''
-    for data in data_list:
+    final_data = sort_data(prd['product_scrap'], data_list)
+    for data in final_data:
         try:
             sku = data['sku']
         except Exception as e:
@@ -105,7 +134,8 @@ def post_data(data_list, min_price, competition, comp_price, time, url, prd):
             upload = sub
             uploaded = True
         # For Manual
-        print(f"{sub['productName']}\n user price: {sub['userPrice']}, min price: {sub['minPrice']}, comp price: {sub['competitionPrice']} actual price: {data['price']}\n")
+        print(
+            f"{sub['productName']}\n user price: {sub['userPrice']}, min price: {sub['minPrice']}, comp price: {sub['competitionPrice']} actual price: {data['price']}\n")
     print(f'\n\nuploaded data:-\n{upload}\n\n')
     sleep(5)
     return response
@@ -256,5 +286,5 @@ class Compare:
             for j in filtered:
                 if i == j:
                     ret_data.append(i)
-        print(f'{len(ret_data)} will be uploaded..')
+        print(f'{len(ret_data)} Are Filtered..')
         return sort_price(ret_data), (datetime.now() - t1).total_seconds() / len(to_compare)
