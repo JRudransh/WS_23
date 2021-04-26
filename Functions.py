@@ -1,3 +1,4 @@
+from re import findall
 from time import sleep
 from datetime import datetime
 from requests import get, post
@@ -68,16 +69,14 @@ def get_data():
 
 
 def sort_data(name, data_list):
-    l_name = list(set(name.lower().split()))
+    l_name = name.lower().split()
     max_match = 0
     matches = []
     temp = {}
     ret = []
     for data in data_list:
-        p_list = list(set(data['name'].lower().split()))
-        for word in l_name:
-            if word in p_list:
-                max_match += 1
+        for word in list(set(l_name)):
+            max_match += len(findall(word, data['name'].lower()))
 
         data['word_match'] = max_match
 
@@ -94,7 +93,13 @@ def sort_data(name, data_list):
     for i in matches:
         if len(ret) > 5:
             break
-        ret += temp[i]
+
+        # Previous logic
+        # ret += temp[i]
+
+        # Your logic sent recently in whatsapp
+        if i <= len(l_name):
+            ret += temp[i]
 
     print('Selected items:\n')
     for data in ret:
