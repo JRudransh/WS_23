@@ -95,13 +95,14 @@ def sort_data(name, data_list):
             break
 
         # Previous logic
-        # ret += temp[i]
+        ret += temp[i]
 
         # Your logic sent recently in whatsapp
-        if i <= len(l_name):
-            ret += temp[i]
+        # if i <= len(l_name):
+        #     ret += temp[i]
 
-    print('Selected items:\n')
+    print(f'\n\nMain string: \t{name}')
+    print('Selected items:')
     for data in ret:
         print(f"Word match {data['word_match']} of {len(l_name)}\t{data['name']}")
 
