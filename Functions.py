@@ -48,7 +48,7 @@ def get_data():
             "preferenceId": 84,
             "userId": 1,
             "url_scrap": "https://www.amazon.com.au/",
-            "product_scrap": 'ASUS TUF Gaming A15 Gaming Laptop',
+            "product_scrap": 'ASUS TUF A17 Gaming Laptop',
             "createdDate": "2021-02-25 05:34:10",
             "category": "Mobile",
             "sku": "sku",
@@ -79,6 +79,8 @@ def sort_data(name, data_list):
             if word in p_list:
                 max_match += 1
 
+        data['word_match'] = max_match
+
         try:
             temp[max_match].append(data)
         except Exception as e:
@@ -87,9 +89,16 @@ def sort_data(name, data_list):
         matches.append(max_match)
         max_match = 0
 
-    print(temp)
-    ret = temp[max(matches)]
-    print(ret)
+    matches = list(set(matches))
+    matches.sort(reverse=True)
+    for i in matches:
+        if len(ret) > 5:
+            break
+        ret += temp[i]
+
+    print('Selected items:\n')
+    for data in ret:
+        print(f"Word match {data['word_match']} of {len(l_name)}\t{data['name']}")
 
     return ret
 
@@ -134,15 +143,19 @@ def post_data(data_list, min_price, competition, comp_price, time, url, prd):
             upload = sub
             uploaded = True
         # For Manual
-        print(
-            f"{sub['productName']}\n user price: {sub['userPrice']}, min price: {sub['minPrice']}, comp price: {sub['competitionPrice']} actual price: {data['price']}\n")
+        # print(f"{sub['productName']}\n user price: {sub['userPrice']}, min price: {sub['minPrice']}, "
+        #       f"comp price: {sub['competitionPrice']} actual price: {data['price']}\n")
     print(f'\n\nuploaded data:-\n{upload}\n\n')
     sleep(5)
     return response
 
 
 def get_sku(url):
-    print(url)
+    urls = ['binglee', 'officeworks', 'jbhifi']
+
+    if url.split('.')[1] not in urls:
+        return 'NA'
+
     browser = webdriver.Firefox()
     # browser.minimize_window()
     browser.get(url)
